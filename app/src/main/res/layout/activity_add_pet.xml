@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/add_pet_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:background="@android:color/white"
+    tools:context=".AddPetActivity">
+
+    <!-- LOGO/HEADER SUS -->
+    <ImageView
+        android:id="@+id/addPetImageHeader"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_marginTop="40dp"
+        android:src="@drawable/logo"
+        android:contentDescription="Adauga Animal"
+        android:scaleType="centerInside" />
+
+    <!-- CARD CU FORMULARUL -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="30dp"
+        app:cardCornerRadius="30dp"
+        app:cardElevation="20dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/lavander_border"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Adaugă pisică"
+                android:textAlignment="center"
+                android:textColor="@color/lavender"
+                android:textSize="32sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:layout_marginTop="30dp">
+
+                <ImageView
+                    android:id="@+id/profileImage"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:background="@drawable/circle_bg"
+                    android:src="@drawable/ic_person"
+                    android:contentDescription="Poza pisica"
+                    android:scaleType="centerInside"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Adaugă poză"
+                    android:textSize="16sp"
+                    android:layout_marginTop="8dp"/>
+            </LinearLayout>
+
+
+            <!-- Nume animal -->
+            <EditText
+                android:id="@+id/edit_pet_name"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/lavander_border"
+                android:drawablePadding="8dp"
+                android:hint="Nume pisică"
+                android:padding="8dp"
+                android:textColor="@color/black" />
+
+            <!-- Dropdown rasa -->
+            <Spinner
+                android:id="@+id/spinner_breed"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/lavander_border"
+                android:padding="8dp"
+                android:spinnerMode="dropdown" />
+
+            <!-- Numar kilograme -->
+            <EditText
+                android:id="@+id/edit_pet_weight"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/lavander_border"
+                android:drawablePadding="8dp"
+                android:hint="Greutate (kg)"
+                android:inputType="numberDecimal"
+                android:padding="8dp"
+                android:textColor="@color/black" />
+
+            <!-- Buton salvare -->
+            <Button
+                android:id="@+id/button_save_pet"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_marginTop="30dp"
+                android:background="@color/lavender"
+                android:text="Salvează"
+                android:textSize="18sp" />
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+</LinearLayout>

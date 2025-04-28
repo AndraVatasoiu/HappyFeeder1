@@ -1,0 +1,9 @@
+<resources>
+    <string-array name="valori_spinner">
+        <item>Rasa</item>
+        <item>Pisică</item>
+        <item>Câine</item>
+        <item>Papagal</item>
+        <item>Altceva</item>
+    </string-array>
+</resources>

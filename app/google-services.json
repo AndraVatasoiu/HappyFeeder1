@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "347127893103",
+    "project_id": "happyfeeder-vfinal1",
+    "storage_bucket": "happyfeeder-vfinal1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:347127893103:android:75af93ef7a1c529920d19a",
+        "android_client_info": {
+          "package_name": "com.example.happyfeeder"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQBRvgmJ1x1UZafudFxT-HUChJDuG43is"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

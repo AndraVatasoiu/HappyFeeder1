@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">HappyFeeder</string>
+
+    <string-array name="pet_breeds_array">
+        <item>Golden Retriever</item>
+        <item>Labrador</item>
+        <item>Beagle</item>
+        <item>Persan</item>
+        <item>Birmanez</item>
+        <item>Altă rasă</item>
+    </string-array>
+
+</resources>

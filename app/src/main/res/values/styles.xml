@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Tema principală a aplicației -->
+    <style name="Theme.HappyFeeder" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:colorBackground">#FFFFFF</item> <!-- Fundal alb -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
+
+    <!-- Stil pentru butonul de autentificare -->
+    <style name="ButtonStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">50dp</item>
+        <item name="android:backgroundTint">#FFAAAA</item> <!-- Roz deschis -->
+        <item name="android:textColor">#FFFFFF</item> <!-- Alb -->
+        <item name="android:textStyle">bold</item>
+
+
+    </style>
+
+    <!-- Stil pentru câmpurile de introducere (email, parolă) -->
+    <style name="EditTextStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">50dp</item>
+        <item name="android:background">@drawable/edittext_bg</item>
+        <item name="android:padding">12dp</item>
+        <item name="android:textColorHint">#888888</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+</resources>
