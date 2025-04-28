@@ -13,7 +13,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -34,10 +33,10 @@ import java.util.List;
 
 public class HomeActivity extends AppCompatActivity {
 
-    TextView welcomeText, petNameText, mealTimeText;
-    ImageView petImage;
-    ProgressBar foodProgressBar;
-    Button logoutButton;
+    private TextView welcomeText, petNameText, petWeightText, mealTimeText;
+    private ImageView petImage;
+    private ProgressBar foodProgressBar;
+    private Button logoutButton;
     private LinearLayout mealTimesContainer;
 
     private FirebaseUser currentUser;
@@ -54,12 +53,14 @@ public class HomeActivity extends AppCompatActivity {
 
         welcomeText = findViewById(R.id.welcomeText);
         petNameText = findViewById(R.id.petNameText);
+        petWeightText = findViewById(R.id.petWeightText);  // Noua referință pentru greutate
         mealTimeText = findViewById(R.id.mealTime);
         petImage = findViewById(R.id.petImage);
         foodProgressBar = findViewById(R.id.foodProgressBar);
         logoutButton = findViewById(R.id.logoutButton);
         mealTimesContainer = findViewById(R.id.mealTimesContainer);
 
+        // Verifică preferințele salvate pentru utilizatorul curent
         SharedPreferences prefs = getSharedPreferences("userSession", MODE_PRIVATE);
         String username = prefs.getString("loggedUsername", null);
 
@@ -68,8 +69,10 @@ public class HomeActivity extends AppCompatActivity {
         } else {
             startActivity(new Intent(HomeActivity.this, LoginActivity.class));
             finish();
+            return;
         }
 
+        // Verificăm dacă utilizatorul este autentificat
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
         if (currentUser != null) {
@@ -86,6 +89,7 @@ public class HomeActivity extends AppCompatActivity {
             finish();
         }
 
+        // Click pe cardul pentru mese
         LinearLayout cardMese = findViewById(R.id.cardMese);
         cardMese.setOnClickListener(v -> {
             Intent intent = new Intent(HomeActivity.this, AddMealActivity.class);
@@ -93,6 +97,7 @@ public class HomeActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        // Click pe butonul de logout
         logoutButton.setOnClickListener(v -> {
             prefs.edit().remove("loggedUsername").apply();
             startActivity(new Intent(HomeActivity.this, LoginActivity.class));
@@ -100,6 +105,7 @@ public class HomeActivity extends AppCompatActivity {
         });
     }
 
+    // Încarcă datele utilizatorului din Firestore
     private void loadUserData(String username) {
         DocumentReference userDoc = usersRef.document(username);
 
@@ -108,7 +114,9 @@ public class HomeActivity extends AppCompatActivity {
                 DocumentSnapshot document = task.getResult();
                 if (document != null && document.exists()) {
                     String usernameFromFirebase = document.getString("username");
-                    welcomeText.setText("Bună, " + usernameFromFirebase);
+                    if (usernameFromFirebase != null) {
+                        welcomeText.setText("Bună, " + usernameFromFirebase);
+                    }
                 }
             } else {
                 Toast.makeText(HomeActivity.this, "Eroare la obținerea datelor utilizatorului.", Toast.LENGTH_SHORT).show();
@@ -116,6 +124,7 @@ public class HomeActivity extends AppCompatActivity {
         });
     }
 
+    // Încarcă datele animalului din Firestore
     private void loadPetData(String username) {
         petsRef.whereEqualTo("owner_username", username).get()
                 .addOnCompleteListener(task -> {
@@ -125,6 +134,7 @@ public class HomeActivity extends AppCompatActivity {
                             for (QueryDocumentSnapshot document : querySnapshot) {
                                 String petName = document.getString("name");
                                 Long foodLevel = document.getLong("foodLevel");
+                                String petWeight = document.getString("weight"); // Câmpul pentru greutatea animalului
 
                                 if (petName != null) {
                                     petNameText.setText(petName);
@@ -132,19 +142,26 @@ public class HomeActivity extends AppCompatActivity {
                                 if (foodLevel != null) {
                                     foodProgressBar.setProgress(foodLevel.intValue());
                                 }
+                                if (petWeight != null) {
+                                    petWeightText.setText("Greutatea animalului : " + petWeight + " kg"); // Setăm greutatea
+                                }
 
                                 String petImageUrl = document.getString("imageUrl");
                                 if (petImageUrl != null) {
+                                    // Dacă vrei imaginea, poți activa Glide aici.
                                     // Glide.with(HomeActivity.this).load(petImageUrl).into(petImage);
                                 }
                             }
+                        } else {
+                            petNameText.setText("Nu ai adăugat încă un animal.");
                         }
                     } else {
-                        petNameText.setText("Nu ai adăugat încă un animal.");
+                        Toast.makeText(HomeActivity.this, "Eroare la încărcarea animalului.", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
 
+    // Încarcă mesele din Firestore
     private void loadMealTimes() {
         mealsRef.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
@@ -155,7 +172,7 @@ public class HomeActivity extends AppCompatActivity {
                 if (snapshot != null) {
                     for (QueryDocumentSnapshot mealSnapshot : snapshot) {
                         Meal meal = mealSnapshot.toObject(Meal.class);
-                        if (meal != null) {
+                        if (meal != null && meal.getTime() != null) {
                             try {
                                 LocalTime time = LocalTime.parse(meal.getTime(), timeFormatter);
                                 mealTimes.add(time);
@@ -184,6 +201,7 @@ public class HomeActivity extends AppCompatActivity {
         });
     }
 
+    // Începe countdown-ul pentru următoarea masă
     private void startMealCountdown(List<LocalTime> sortedTimes) {
         LocalTime now = LocalTime.now();
         LocalTime nextMeal = null;
@@ -208,6 +226,7 @@ public class HomeActivity extends AppCompatActivity {
         launchCountdown(millis);
     }
 
+    // Lansează countdown-ul pentru următoarea masă
     private void launchCountdown(long millis) {
         mealCountdownTimer = new CountDownTimer(millis, 1000) {
             @Override
@@ -225,6 +244,7 @@ public class HomeActivity extends AppCompatActivity {
         }.start();
     }
 
+    // Adaugă card pentru fiecare masă programată
     private void addMealTimeCard(String time) {
         LayoutInflater inflater = LayoutInflater.from(this);
         View timeCard = inflater.inflate(R.layout.item_meal_time, mealTimesContainer, false);

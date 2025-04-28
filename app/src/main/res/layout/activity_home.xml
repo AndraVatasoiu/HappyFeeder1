@@ -310,6 +310,7 @@
             </LinearLayout>
 
             <!-- Greutatea animalului -->
+            <!-- Card Greutate -->
             <LinearLayout
                 android:id="@+id/cardGreutate"
                 android:layout_width="match_parent"
@@ -329,6 +330,7 @@
                     app:tint="#ED3A55" />
 
                 <TextView
+                    android:id="@+id/petWeightText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Greutatea animalului"
