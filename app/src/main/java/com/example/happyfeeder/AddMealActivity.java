@@ -136,6 +136,23 @@ public class AddMealActivity extends AppCompatActivity {
             return;
         }
 
+        // Verificăm dacă toate câmpurile sunt completate
+        for (int i = 0; i < count; i++) {
+            View card = mealCardContainer.getChildAt(i);
+            EditText name = card.findViewById(R.id.edit_meal_name);
+            EditText quantity = card.findViewById(R.id.edit_meal_quantity);
+            EditText time = card.findViewById(R.id.edit_meal_time);
+
+            String mealName = name.getText().toString().trim();
+            String mealQuantity = quantity.getText().toString().trim();
+            String mealTime = time.getText().toString().trim();
+
+            if (mealName.isEmpty() || mealQuantity.isEmpty() || mealTime.isEmpty()) {
+                Toast.makeText(this, "Completează toate câmpurile pentru masa #" + (i + 1), Toast.LENGTH_SHORT).show();
+                return;  // Oprește complet funcția, NU mai salvează
+            }
+        }
+
         CollectionReference usersRef = fStore.collection("users");
 
         // Căutăm utilizatorul după username (nu după document ID)
