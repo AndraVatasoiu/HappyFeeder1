@@ -231,7 +231,31 @@ public class AddMealActivity extends AppCompatActivity {
                                             // Afisează mesele deja existente
                                             for (Map.Entry<String, Object> entry : existingMeals.entrySet()) {
                                                 Map<String, Object> mealDetails = (Map<String, Object>) entry.getValue();
-                                                addMealCard(true, mealDetails);  // Adaugă mesele existente cu fundal gri
+
+                                                String mealId = entry.getKey();  // ID-ul mesei (ex: "meal1")
+
+                                                // Creăm cardul
+                                                addMealCard(true, mealDetails);
+
+                                                // După ce adăugăm cardul, îl modificăm
+                                                int lastIndex = existingMealsContainer.getChildCount() - 1;
+                                                View mealCard = existingMealsContainer.getChildAt(lastIndex);
+                                                ImageView buttonRemoveMeal = mealCard.findViewById(R.id.button_remove_meal);
+
+                                                // Setăm mealId ca TAG
+                                                buttonRemoveMeal.setTag(mealId);
+
+                                                // Setăm OnClickListener pentru ștergere
+                                                buttonRemoveMeal.setOnClickListener(v -> {
+                                                    String idToDelete = (String) v.getTag();
+                                                    userDocRef.update("meals." + idToDelete, null)
+                                                            .addOnSuccessListener(unused -> {
+                                                                Toast.makeText(AddMealActivity.this, "Masa a fost ștearsă!", Toast.LENGTH_SHORT).show();
+                                                                existingMealsContainer.removeView(mealCard);
+                                                            })
+                                                            .addOnFailureListener(e -> Toast.makeText(AddMealActivity.this, "Eroare la ștergere: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                                                });
+                                               // addMealCard(true, mealDetails);  // Adaugă mesele existente cu fundal gri
                                             }
                                         }
                                     });
