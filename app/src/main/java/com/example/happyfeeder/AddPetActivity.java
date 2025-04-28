@@ -134,10 +134,10 @@ public class AddPetActivity extends AppCompatActivity {
         petData.put("owner_username", username);
         petData.put("name", name);
         petData.put("breed", breed);
-        petData.put("weight", weight);
+        petData.put("weight", weight);  // Aici salvăm greutatea
         petData.put("photoUrl", imageUrl);
 
-        // ➡️ 1. Salvăm în colecția globală "pets"
+        // Salvăm în colecția globală "pets"
         fStore.collection("pets").add(petData)
                 .addOnSuccessListener(documentReference -> {
                     Toast.makeText(this, "Animal adăugat în baza de date globală!", Toast.LENGTH_SHORT).show();
@@ -146,18 +146,18 @@ public class AddPetActivity extends AppCompatActivity {
                     Toast.makeText(this, "Eroare salvare în pets/: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
 
-        // ➡️ 2. Căutăm utilizatorul după username (nu după ID-ul documentului!)
+        // Căutăm utilizatorul după username (nu după ID-ul documentului!)
         fStore.collection("users")
-                .whereEqualTo("username", username) // 🔥 caută userul după câmp
+                .whereEqualTo("username", username)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     if (!queryDocumentSnapshots.isEmpty()) {
                         String documentId = queryDocumentSnapshots.getDocuments().get(0).getId(); // luam ID-ul documentului găsit
 
                         Map<String, Object> updateData = new HashMap<>();
-                        updateData.put("pets", name); // sau poti salva mai multe daca vrei
+                        updateData.put("pets", name); // Sau poți salva mai multe dacă vrei
 
-                        // 🔥 facem update la documentul corect
+                        // Facem update la documentul corect
                         fStore.collection("users").document(documentId)
                                 .update(updateData)
                                 .addOnSuccessListener(unused -> {
@@ -175,6 +175,4 @@ public class AddPetActivity extends AppCompatActivity {
                     Toast.makeText(this, "Eroare la căutarea utilizatorului: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
-
-
 }
