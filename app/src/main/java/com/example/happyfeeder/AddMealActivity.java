@@ -118,7 +118,7 @@ public class AddMealActivity extends AppCompatActivity {
             timePickerDialog.show();
         });
 
-       // buttonRemoveMeal.setOnClickListener(v -> mealCardContainer.removeView(mealCard));
+        buttonRemoveMeal.setOnClickListener(v -> mealCardContainer.removeView(mealCard));
 
         // Adaugă cardul în containerul corespunzător
         if (isSaved) {
