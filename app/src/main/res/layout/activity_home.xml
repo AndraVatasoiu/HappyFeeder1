@@ -156,7 +156,7 @@
                     android:id="@+id/mealTime"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="8h 15min"
+                    android:text=" Nicio masa programata "
                     android:textSize="24sp"
                     android:textStyle="bold"
                     android:textColor="#ED3A55" />
@@ -308,6 +308,7 @@
                         android:orientation="horizontal" />
                 </HorizontalScrollView>
             </LinearLayout>
+
 
             <!-- Greutatea animalului -->
             <!-- Card Greutate -->

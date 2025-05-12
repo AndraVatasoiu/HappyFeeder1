@@ -18,7 +18,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -30,6 +29,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class HomeActivity extends AppCompatActivity {
 
@@ -41,151 +41,137 @@ public class HomeActivity extends AppCompatActivity {
 
     private FirebaseUser currentUser;
     private FirebaseFirestore db;
-    private CollectionReference usersRef, petsRef, mealsRef;
+    private CollectionReference usersRef, petsRef;
 
     private CountDownTimer mealCountdownTimer;
     private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+    private String username;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
+        initializeViews();
+        setupFirebase();
+        setupClickListeners();
+    }
+
+    private void initializeViews() {
         welcomeText = findViewById(R.id.welcomeText);
         petNameText = findViewById(R.id.petNameText);
-        petWeightText = findViewById(R.id.petWeightText);  // Noua referință pentru greutate
+        petWeightText = findViewById(R.id.petWeightText);
         mealTimeText = findViewById(R.id.mealTime);
         petImage = findViewById(R.id.petImage);
         foodProgressBar = findViewById(R.id.foodProgressBar);
         logoutButton = findViewById(R.id.logoutButton);
         mealTimesContainer = findViewById(R.id.mealTimesContainer);
+    }
 
-        // Verifică preferințele salvate pentru utilizatorul curent
+    private void setupFirebase() {
         SharedPreferences prefs = getSharedPreferences("userSession", MODE_PRIVATE);
-        String username = prefs.getString("loggedUsername", null);
+        username = prefs.getString("loggedUsername", null);
 
-        if (username != null) {
-            welcomeText.setText("Bună, " + username);
-        } else {
+        if (username == null) {
             startActivity(new Intent(HomeActivity.this, LoginActivity.class));
             finish();
             return;
         }
 
-        // Verificăm dacă utilizatorul este autentificat
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
-
-        if (currentUser != null) {
-            db = FirebaseFirestore.getInstance();
-            usersRef = db.collection("users");
-            petsRef = db.collection("pets");
-            mealsRef = db.collection("meals").document(currentUser.getUid()).collection("mealTimes");
-
-            loadUserData(username);
-            loadPetData(username);
-            loadMealTimes();
-        } else {
+        if (currentUser == null) {
             Toast.makeText(this, "Nu ești logat!", Toast.LENGTH_SHORT).show();
             finish();
+            return;
         }
 
-        // Click pe cardul pentru mese
-        LinearLayout cardMese = findViewById(R.id.cardMese);
-        cardMese.setOnClickListener(v -> {
+        db = FirebaseFirestore.getInstance();
+        usersRef = db.collection("users");
+        petsRef = db.collection("pets");
+
+        loadUserData();
+        loadPetData();
+        loadMealTimes();
+    }
+
+    private void setupClickListeners() {
+        findViewById(R.id.cardMese).setOnClickListener(v -> {
             Intent intent = new Intent(HomeActivity.this, AddMealActivity.class);
             intent.putExtra("username", username);
             startActivity(intent);
         });
 
-        // Click pe butonul de logout
         logoutButton.setOnClickListener(v -> {
-            prefs.edit().remove("loggedUsername").apply();
+            getSharedPreferences("userSession", MODE_PRIVATE)
+                    .edit()
+                    .remove("loggedUsername")
+                    .apply();
             startActivity(new Intent(HomeActivity.this, LoginActivity.class));
             finish();
         });
     }
 
-    // Încarcă datele utilizatorului din Firestore
-    private void loadUserData(String username) {
-        DocumentReference userDoc = usersRef.document(username);
-
-        userDoc.get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                DocumentSnapshot document = task.getResult();
-                if (document != null && document.exists()) {
-                    String usernameFromFirebase = document.getString("username");
-                    if (usernameFromFirebase != null) {
-                        welcomeText.setText("Bună, " + usernameFromFirebase);
+    private void loadUserData() {
+        usersRef.whereEqualTo("username", username)
+                .get().addOnSuccessListener(querySnapshot -> {
+                    if (!querySnapshot.isEmpty()) {
+                        DocumentSnapshot doc = querySnapshot.getDocuments().get(0);
+                        welcomeText.setText("Bună, " + doc.getString("username"));
                     }
-                }
-            } else {
-                Toast.makeText(HomeActivity.this, "Eroare la obținerea datelor utilizatorului.", Toast.LENGTH_SHORT).show();
-            }
-        });
+                });
     }
 
-    // Încarcă datele animalului din Firestore
-    private void loadPetData(String username) {
+    private void loadPetData() {
         petsRef.whereEqualTo("owner_username", username).get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         QuerySnapshot querySnapshot = task.getResult();
                         if (querySnapshot != null && !querySnapshot.isEmpty()) {
                             for (QueryDocumentSnapshot document : querySnapshot) {
-                                String petName = document.getString("name");
+                                petNameText.setText(document.getString("name"));
                                 Long foodLevel = document.getLong("foodLevel");
-                                String petWeight = document.getString("weight"); // Câmpul pentru greutatea animalului
-
-                                if (petName != null) {
-                                    petNameText.setText(petName);
-                                }
-                                if (foodLevel != null) {
-                                    foodProgressBar.setProgress(foodLevel.intValue());
-                                }
-                                if (petWeight != null) {
-                                    petWeightText.setText("Greutatea animalului : " + petWeight + " kg"); // Setăm greutatea
-                                }
-
-                                String petImageUrl = document.getString("imageUrl");
-                                if (petImageUrl != null) {
-                                    // Dacă vrei imaginea, poți activa Glide aici.
-                                    // Glide.with(HomeActivity.this).load(petImageUrl).into(petImage);
-                                }
+                                foodProgressBar.setProgress(foodLevel != null ? foodLevel.intValue() : 0);
+                                petWeightText.setText("Greutatea animalului: " + document.getString("weight") + " kg");
                             }
                         } else {
                             petNameText.setText("Nu ai adăugat încă un animal.");
                         }
-                    } else {
-                        Toast.makeText(HomeActivity.this, "Eroare la încărcarea animalului.", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
 
-    // Încarcă mesele din Firestore
     private void loadMealTimes() {
-        mealsRef.get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
+        if (mealCountdownTimer != null) {
+            mealCountdownTimer.cancel();
+        }
+
+        usersRef.whereEqualTo("username", username).get().addOnSuccessListener(querySnapshot -> {
+            if (!querySnapshot.isEmpty()) {
+                DocumentSnapshot userDoc = querySnapshot.getDocuments().get(0);
+                Object mealsObj = userDoc.get("meals");
+
                 mealTimesContainer.removeAllViews();
                 List<LocalTime> mealTimes = new ArrayList<>();
 
-                QuerySnapshot snapshot = task.getResult();
-                if (snapshot != null) {
-                    for (QueryDocumentSnapshot mealSnapshot : snapshot) {
-                        Meal meal = mealSnapshot.toObject(Meal.class);
-                        if (meal != null && meal.getTime() != null) {
-                            try {
-                                LocalTime time = LocalTime.parse(meal.getTime(), timeFormatter);
-                                mealTimes.add(time);
-                                addMealTimeCard(meal.getTime());
-                            } catch (Exception e) {
-                                e.printStackTrace();
+                if (mealsObj instanceof Map) {
+                    Map<String, Object> mealsMap = (Map<String, Object>) mealsObj;
+
+                    for (Map.Entry<String, Object> entry : mealsMap.entrySet()) {
+                        Object value = entry.getValue();
+                        if (value instanceof Map) {
+                            Map<String, Object> mealMap = (Map<String, Object>) value;
+                            String timeStr = (String) mealMap.get("ora_mesei");
+
+                            if (timeStr != null) {
+                                try {
+                                    LocalTime time = LocalTime.parse(timeStr, timeFormatter);
+                                    mealTimes.add(time);
+                                    addMealTimeCard(timeStr);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
                             }
                         }
-                    }
-
-                    if (mealCountdownTimer != null) {
-                        mealCountdownTimer.cancel();
-                        mealCountdownTimer = null;
                     }
 
                     if (!mealTimes.isEmpty()) {
@@ -194,18 +180,20 @@ public class HomeActivity extends AppCompatActivity {
                     } else {
                         mealTimeText.setText("Nicio masă programată.");
                     }
+                } else {
+                    mealTimeText.setText("Nu există mese salvate.");
                 }
-            } else {
-                Toast.makeText(HomeActivity.this, "Eroare la încărcarea meselor.", Toast.LENGTH_SHORT).show();
             }
+        }).addOnFailureListener(e -> {
+            Toast.makeText(HomeActivity.this, "Eroare la încărcarea meselor.", Toast.LENGTH_SHORT).show();
         });
     }
 
-    // Începe countdown-ul pentru următoarea masă
     private void startMealCountdown(List<LocalTime> sortedTimes) {
         LocalTime now = LocalTime.now();
         LocalTime nextMeal = null;
 
+        // Găsește prima masă care este după ora curentă
         for (LocalTime time : sortedTimes) {
             if (time.isAfter(now)) {
                 nextMeal = time;
@@ -215,36 +203,41 @@ public class HomeActivity extends AppCompatActivity {
 
         long millis;
         if (nextMeal == null) {
+            // Dacă nu mai sunt mese astăzi, luăm prima masă de mâine
             nextMeal = sortedTimes.get(0);
-            long millisUntilMidnight = Duration.between(now, LocalTime.MIDNIGHT).toMillis();
+            long millisUntilMidnight = Duration.between(now, LocalTime.MAX).toMillis() + 1000; // +1 sec pentru a trece la ziua următoare
             long millisFromMidnightToNextMeal = Duration.between(LocalTime.MIDNIGHT, nextMeal).toMillis();
             millis = millisUntilMidnight + millisFromMidnightToNextMeal;
         } else {
             millis = Duration.between(now, nextMeal).toMillis();
         }
 
-        launchCountdown(millis);
+        launchCountdown(millis, nextMeal);
     }
 
-    // Lansează countdown-ul pentru următoarea masă
-    private void launchCountdown(long millis) {
+    private void launchCountdown(long millis, LocalTime nextMealTime) {
+        if (mealCountdownTimer != null) {
+            mealCountdownTimer.cancel();
+        }
+
         mealCountdownTimer = new CountDownTimer(millis, 1000) {
             @Override
             public void onTick(long ms) {
                 long h = ms / 3600000;
                 long m = (ms % 3600000) / 60000;
                 long s = (ms % 60000) / 1000;
-                mealTimeText.setText(String.format("%02dh %02dm %02ds", h, m, s));
+                String countdownText = String.format("%02dh %02dm %02ds", h, m, s);
+                mealTimeText.setText(countdownText);
             }
 
             @Override
             public void onFinish() {
+                // Când expiră timer-ul, reîncărcăm mesele pentru a afișa următoarea masă
                 loadMealTimes();
             }
         }.start();
     }
 
-    // Adaugă card pentru fiecare masă programată
     private void addMealTimeCard(String time) {
         LayoutInflater inflater = LayoutInflater.from(this);
         View timeCard = inflater.inflate(R.layout.item_meal_time, mealTimesContainer, false);
@@ -253,5 +246,19 @@ public class HomeActivity extends AppCompatActivity {
         timeText.setText(time);
 
         mealTimesContainer.addView(timeCard);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadMealTimes(); // Reîncarcă mesele când activitatea revine în prim-plan
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (mealCountdownTimer != null) {
+            mealCountdownTimer.cancel();
+        }
+        super.onDestroy();
     }
 }

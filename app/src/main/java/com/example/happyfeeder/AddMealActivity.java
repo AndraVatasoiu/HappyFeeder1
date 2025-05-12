@@ -1,6 +1,7 @@
 package com.example.happyfeeder;
 
 import android.app.TimePickerDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -90,22 +91,17 @@ public class AddMealActivity extends AppCompatActivity {
 
             mealCard.setBackgroundResource(R.drawable.bg_rounded_gray);
 
-            // Blocăm editarea pentru mesele existente
             editMealName.setEnabled(false);
             editMealQuantity.setEnabled(false);
             editMealTime.setEnabled(false);
-
             editMealName.setFocusable(false);
             editMealQuantity.setFocusable(false);
             editMealTime.setFocusable(false);
-
             editMealTime.setClickable(false);
-
         } else {
             mealCard.setBackgroundResource(R.drawable.bg_rounded_white);
         }
 
-        // Time picker doar pentru mesele noi
         if (!isSaved) {
             editMealTime.setFocusable(false);
             editMealTime.setClickable(true);
@@ -130,13 +126,11 @@ public class AddMealActivity extends AppCompatActivity {
 
         buttonRemoveMeal.setOnClickListener(v -> {
             if (isSaved) {
-                // Pentru mesele salvate în Firestore
                 String mealId = (String) buttonRemoveMeal.getTag();
                 if (mealId != null) {
                     deleteMealFromFirestore(mealId, mealCard);
                 }
             } else {
-                // Pentru mesele noi (nesalvate încă)
                 mealCardContainer.removeView(mealCard);
             }
         });
@@ -157,12 +151,12 @@ public class AddMealActivity extends AppCompatActivity {
                         for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
                             DocumentReference userDocRef = documentSnapshot.getReference();
                             Map<String, Object> updates = new HashMap<>();
-                            updates.put("meals." + mealId, com.google.firebase.firestore.FieldValue.delete()); // AICI E SECRETUL
+                            updates.put("meals." + mealId, com.google.firebase.firestore.FieldValue.delete());
 
                             userDocRef.update(updates)
                                     .addOnSuccessListener(unused -> {
                                         existingMealsContainer.removeView(mealCard);
-                                        Toast.makeText(AddMealActivity.this, "Masa a fost ștearsă complet!", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(AddMealActivity.this, "Masa a fost ștearsă!", Toast.LENGTH_SHORT).show();
                                     })
                                     .addOnFailureListener(e -> Toast.makeText(AddMealActivity.this, "Eroare la ștergere: " + e.getMessage(), Toast.LENGTH_SHORT).show());
                         }
@@ -170,7 +164,6 @@ public class AddMealActivity extends AppCompatActivity {
                 })
                 .addOnFailureListener(e -> Toast.makeText(AddMealActivity.this, "Eroare la căutarea utilizatorului: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
-
 
     private void saveMeals() {
         int count = mealCardContainer.getChildCount();
@@ -186,52 +179,61 @@ public class AddMealActivity extends AppCompatActivity {
                     if (!queryDocumentSnapshots.isEmpty()) {
                         for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
                             DocumentReference userDocRef = documentSnapshot.getReference();
-                            userDocRef.get()
-                                    .addOnSuccessListener(document -> {
-                                        Map<String, Object> existingMeals = (Map<String, Object>) document.get("meals");
-                                        if (existingMeals == null) {
-                                            existingMeals = new HashMap<>();
-                                        }
 
-                                        Map<String, Object> mealsMap = new HashMap<>();
+                            userDocRef.get().addOnSuccessListener(document -> {
+                                Map<String, Object> existingMeals = (Map<String, Object>) document.get("meals");
+                                if (existingMeals == null) {
+                                    existingMeals = new HashMap<>();
+                                }
 
-                                        for (int i = 0; i < count; i++) {
-                                            View card = mealCardContainer.getChildAt(i);
-                                            EditText name = card.findViewById(R.id.edit_meal_name);
-                                            EditText quantity = card.findViewById(R.id.edit_meal_quantity);
-                                            EditText time = card.findViewById(R.id.edit_meal_time);
+                                // Verificăm dacă toate câmpurile sunt completate înainte de salvare
+                                for (int i = 0; i < count; i++) {
+                                    View card = mealCardContainer.getChildAt(i);
+                                    EditText name = card.findViewById(R.id.edit_meal_name);
+                                    EditText quantity = card.findViewById(R.id.edit_meal_quantity);
+                                    EditText time = card.findViewById(R.id.edit_meal_time);
 
-                                            String mealName = name.getText().toString().trim();
-                                            String mealQuantity = quantity.getText().toString().trim();
-                                            String mealTime = time.getText().toString().trim();
+                                    String mealName = name.getText().toString().trim();
+                                    String mealQuantity = quantity.getText().toString().trim();
+                                    String mealTime = time.getText().toString().trim();
 
-                                            if (mealName.isEmpty() || mealQuantity.isEmpty() || mealTime.isEmpty()) {
-                                                Toast.makeText(this, "Completează toate câmpurile pentru masa #" + (i + 1), Toast.LENGTH_SHORT).show();
-                                                return;
-                                            }
+                                    if (mealName.isEmpty() || mealQuantity.isEmpty() || mealTime.isEmpty()) {
+                                        Toast.makeText(this, "Completează toate câmpurile pentru masa #" + (i + 1), Toast.LENGTH_SHORT).show();
+                                        return;
+                                    }
+                                }
 
-                                            String newMealId = "meal" + (existingMeals.size() + mealsMap.size() + 1);
+                                // Dacă toate câmpurile sunt OK, procedăm cu salvarea
+                                for (int i = 0; i < count; i++) {
+                                    View card = mealCardContainer.getChildAt(i);
+                                    EditText name = card.findViewById(R.id.edit_meal_name);
+                                    EditText quantity = card.findViewById(R.id.edit_meal_quantity);
+                                    EditText time = card.findViewById(R.id.edit_meal_time);
 
-                                            Map<String, Object> mealDetails = new HashMap<>();
-                                            mealDetails.put("nume_masa", mealName);
-                                            mealDetails.put("cantitate", mealQuantity);
-                                            mealDetails.put("ora_mesei", mealTime);
+                                    String mealName = name.getText().toString().trim();
+                                    String mealQuantity = quantity.getText().toString().trim();
+                                    String mealTime = time.getText().toString().trim();
 
-                                            mealsMap.put(newMealId, mealDetails);
-                                        }
+                                    // Generăm ID unic bazat pe timestamp
+                                    String newMealId = "meal_" + System.currentTimeMillis() + "_" + i;
+                                    Map<String, Object> mealDetails = new HashMap<>();
+                                    mealDetails.put("nume_masa", mealName);
+                                    mealDetails.put("cantitate", mealQuantity);
+                                    mealDetails.put("ora_mesei", mealTime);
 
-                                        existingMeals.putAll(mealsMap);
+                                    existingMeals.put(newMealId, mealDetails);
+                                }
 
-                                        Map<String, Object> updateData = new HashMap<>();
-                                        updateData.put("meals", existingMeals);
-
-                                        userDocRef.update(updateData)
-                                                .addOnSuccessListener(unused -> {
-                                                    Toast.makeText(AddMealActivity.this, "Mesele au fost salvate!", Toast.LENGTH_LONG).show();
-                                                    finish();
-                                                })
-                                                .addOnFailureListener(e -> Toast.makeText(AddMealActivity.this, "Eroare la salvare: " + e.getMessage(), Toast.LENGTH_SHORT).show());
-                                    });
+                                // Actualizăm documentul cu noile mese
+                                userDocRef.update("meals", existingMeals)
+                                        .addOnSuccessListener(unused -> {
+                                            Toast.makeText(AddMealActivity.this, "Mesele au fost salvate cu succes!", Toast.LENGTH_LONG).show();
+                                            Intent intent = new Intent(AddMealActivity.this, HomeActivity.class);
+                                            startActivity(intent);
+                                            finish();
+                                        })
+                                        .addOnFailureListener(e -> Toast.makeText(AddMealActivity.this, "Eroare la salvare: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                            });
                         }
                     } else {
                         Toast.makeText(AddMealActivity.this, "Utilizatorul nu a fost găsit!", Toast.LENGTH_SHORT).show();
@@ -262,7 +264,7 @@ public class AddMealActivity extends AppCompatActivity {
                                                 View mealCard = existingMealsContainer.getChildAt(lastIndex);
                                                 ImageView buttonRemoveMeal = mealCard.findViewById(R.id.button_remove_meal);
 
-                                                buttonRemoveMeal.setTag(mealId); // important pentru ștergere
+                                                buttonRemoveMeal.setTag(mealId);
                                             }
                                         }
                                     });
