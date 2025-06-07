@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white">
+
+    <LinearLayout
+        android:id="@+id/autoMealContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Programare automată a meselor"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="#333"
+            android:gravity="center"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Container pentru cardurile de mese -->
+        <LinearLayout
+            android:id="@+id/mealCardContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <!-- Buton Salvează -->
+        <Button
+            android:id="@+id/button_save_auto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Salvează mese"
+            android:layout_marginTop="32dp"
+            android:textAllCaps="false"
+            android:background="@drawable/bg_rounded_red"
+            android:textColor="#fff" />
+
+        <!-- Buton Înapoi -->
+        <Button
+            android:id="@+id/button_back_auto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Înapoi"
+            android:textAllCaps="false"
+            android:textColor="#333"
+            android:background="@drawable/bg_rounded_white"
+            android:layout_marginTop="16dp" />
+
+    </LinearLayout>
+</ScrollView>

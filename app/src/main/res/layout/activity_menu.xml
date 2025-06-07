@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@color/white"
+    tools:context=".MenuActivity">
+
+    <!-- Header -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Setări"
+        android:textSize="24sp"
+        android:textColor="@color/black"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp"
+        android:gravity="center"/>
+
+    <!-- Change Email Button -->
+    <Button
+        android:id="@+id/btnChangeEmail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Schimbare Email"
+        android:textSize="18sp"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/lavender"
+        android:layout_marginBottom="16dp"
+        android:padding="16dp"
+        android:drawableStart="@drawable/ic_email"
+        android:drawablePadding="8dp"/>
+
+    <!-- Change Password Button -->
+    <Button
+        android:id="@+id/btnChangePassword"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Schimbare Parolă"
+        android:textSize="18sp"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/lavender"
+        android:padding="16dp"
+        android:drawableStart="@drawable/ic_lock"
+        android:drawablePadding="8dp"/>
+
+</LinearLayout>

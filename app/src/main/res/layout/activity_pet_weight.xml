@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scrollView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:background="@android:color/white">
+
+    <LinearLayout
+        android:id="@+id/mainLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Titlu -->
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Istoric Greutate Animal"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_gravity="center_horizontal"
+            android:paddingBottom="16dp" />
+
+        <!-- Tabelul propriu-zis -->
+        <TableLayout
+            android:id="@+id/weightTable"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:stretchColumns="*"
+            android:shrinkColumns="*"
+            android:background="@android:color/darker_gray"
+            android:padding="1dp">
+
+            <!-- Headerul tabelului -->
+            <TableRow android:background="@drawable/bg_rounded_red">
+                <TextView
+                    android:text="Data"
+                    android:padding="8dp"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/white" />
+
+                <TextView
+                    android:text="Greutate"
+                    android:padding="8dp"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/white" />
+
+                <TextView
+                    android:text="Diferență"
+                    android:padding="8dp"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/white" />
+            </TableRow>
+
+            <!-- Rânduri dinamice vor fi adăugate din Java -->
+
+        </TableLayout>
+
+        <!-- Spațiu -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="24dp" />
+
+        <!-- Buton Înapoi -->
+        <Button
+            android:id="@+id/backButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Înapoi"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/bg_rounded_red"
+            android:textColor="@android:color/white"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="12dp" />
+    </LinearLayout>
+</ScrollView>

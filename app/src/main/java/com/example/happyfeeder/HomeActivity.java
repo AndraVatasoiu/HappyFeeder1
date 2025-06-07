@@ -7,6 +7,7 @@ import android.os.CountDownTimer;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -46,6 +47,9 @@ public class HomeActivity extends AppCompatActivity {
     private CountDownTimer mealCountdownTimer;
     private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
     private String username;
+    private ImageButton menuButton;
+    private Button addPetButton;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,10 +66,12 @@ public class HomeActivity extends AppCompatActivity {
         petNameText = findViewById(R.id.petNameText);
         petWeightText = findViewById(R.id.petWeightText);
         mealTimeText = findViewById(R.id.mealTime);
-        petImage = findViewById(R.id.petImage);
         foodProgressBar = findViewById(R.id.foodProgressBar);
         logoutButton = findViewById(R.id.logoutButton);
         mealTimesContainer = findViewById(R.id.mealTimesContainer);
+        menuButton = findViewById(R.id.menuButton);
+        addPetButton = findViewById(R.id.addPetButton);
+
     }
 
     private void setupFirebase() {
@@ -96,7 +102,7 @@ public class HomeActivity extends AppCompatActivity {
 
     private void setupClickListeners() {
         findViewById(R.id.cardMese).setOnClickListener(v -> {
-            Intent intent = new Intent(HomeActivity.this, AddMealActivity.class);
+            Intent intent = new Intent(HomeActivity.this, MealChoiceActivity.class);
             intent.putExtra("username", username);
             startActivity(intent);
         });
@@ -109,6 +115,28 @@ public class HomeActivity extends AppCompatActivity {
             startActivity(new Intent(HomeActivity.this, LoginActivity.class));
             finish();
         });
+        menuButton.setOnClickListener(v -> {
+            Intent intent = new Intent(HomeActivity.this, MenuActivity.class);
+            intent.putExtra("username", username);
+            startActivity(intent);
+        });
+
+        addPetButton.setOnClickListener(v -> {
+            Intent intent = new Intent(HomeActivity.this, AddPetActivity.class);
+            intent.putExtra("username", username); // dacă vrei să trimiți username mai departe
+            startActivity(intent);
+        });
+        findViewById(R.id.cardGreutate).setOnClickListener(v -> {
+            Intent intent = new Intent(HomeActivity.this, PetWeightActivity.class);
+            intent.putExtra("username", username);
+            startActivity(intent);
+        });
+        findViewById(R.id.cardMesaj).setOnClickListener(v -> {
+            Intent intent = new Intent(HomeActivity.this, RecordAudioActivity.class);
+            startActivity(intent);
+        });
+
+
     }
 
     private void loadUserData() {
@@ -251,6 +279,7 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        loadPetData();
         loadMealTimes(); // Reîncarcă mesele când activitatea revine în prim-plan
     }
 
