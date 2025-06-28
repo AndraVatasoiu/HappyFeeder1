@@ -10,8 +10,12 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class AutoMealActivity extends AppCompatActivity {
 
@@ -23,7 +27,6 @@ public class AutoMealActivity extends AppCompatActivity {
     private LinearLayout mealCardContainer;
     private Button buttonSave, buttonBack;
 
-    // Orele meselor
     private final String[] mealTimes = {"08:00", "12:00", "16:00"};
 
     @Override
@@ -46,7 +49,6 @@ public class AutoMealActivity extends AppCompatActivity {
             return;
         }
 
-        // Preia greutatea animalului
         db.collection("pets")
                 .whereEqualTo("owner_username", username)
                 .get()
@@ -55,7 +57,6 @@ public class AutoMealActivity extends AppCompatActivity {
                         DocumentSnapshot petDoc = snapshot.getDocuments().get(0);
                         petId = petDoc.getId();
 
-                        // Dacă greutatea e stocată ca String
                         String weightStr = petDoc.getString("weight");
                         if (weightStr != null) {
                             try {
@@ -64,7 +65,6 @@ public class AutoMealActivity extends AppCompatActivity {
                                 currentWeight = 0f;
                             }
                         } else {
-                            // Dacă e stocată ca număr
                             Double weightDouble = petDoc.getDouble("weight");
                             currentWeight = weightDouble != null ? weightDouble.floatValue() : 0f;
                         }
@@ -82,23 +82,18 @@ public class AutoMealActivity extends AppCompatActivity {
 
         buttonBack.setOnClickListener(v -> finish());
 
-        buttonSave.setOnClickListener(v -> {
-            // Aici poți adăuga logica de salvare a programării meselor în baza de date
-            Toast.makeText(this, "Mesele au fost salvate (funcționalitate de implementat)", Toast.LENGTH_SHORT).show();
-        });
+        buttonSave.setOnClickListener(v -> saveAutoMeals());
     }
 
     private void showMeals(float weightKg) {
         mealCardContainer.removeAllViews();
-
-        // Calculăm cantitatea per masă (15g * kg)
         int gramsPerMeal = (int) (15 * weightKg);
-
         for (String time : mealTimes) {
             LinearLayout card = new LinearLayout(this);
             card.setOrientation(LinearLayout.VERTICAL);
             card.setBackgroundResource(R.drawable.bg_rounded_gray);
             card.setPadding(32, 32, 32, 32);
+
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -118,8 +113,47 @@ public class AutoMealActivity extends AppCompatActivity {
 
             card.addView(timeText);
             card.addView(amountText);
-
             mealCardContainer.addView(card);
         }
+    }
+
+    private void saveAutoMeals() {
+        db.collection("users")
+                .whereEqualTo("username", username)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    if (!querySnapshot.isEmpty()) {
+                        DocumentSnapshot userDoc = querySnapshot.getDocuments().get(0);
+                        DocumentReference userRef = userDoc.getReference();
+
+                        // Construim mesele noi
+                        Map<String, Object> newMeals = new HashMap<>();
+                        int gramsPerMeal = (int) (15 * currentWeight);
+
+                        for (int i = 0; i < mealTimes.length; i++) {
+                            String time = mealTimes[i];
+                            String mealId = "meal_" + System.currentTimeMillis() + "_" + i;
+
+                            Map<String, Object> mealDetails = new HashMap<>();
+                            mealDetails.put("nume_masa", "Masă automată");
+                            mealDetails.put("cantitate", gramsPerMeal + " grame");
+                            mealDetails.put("ora_mesei", time);
+
+                            newMeals.put(mealId, mealDetails);
+                        }
+
+                        // Suprascriem câmpul meals
+                        userRef.update("meals", newMeals)
+                                .addOnSuccessListener(unused -> {
+                                    Toast.makeText(this, "Mesele automate au fost salvate!", Toast.LENGTH_LONG).show();
+                                    finish();
+                                })
+                                .addOnFailureListener(e -> Toast.makeText(this, "Eroare la salvare: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+
+                    } else {
+                        Toast.makeText(this, "Utilizatorul nu a fost găsit!", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(e -> Toast.makeText(this, "Eroare la accesarea bazei de date!", Toast.LENGTH_SHORT).show());
     }
 }

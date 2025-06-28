@@ -9,9 +9,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 public class SplashActivity extends AppCompatActivity {
-
     private FirebaseAuth auth;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -20,15 +18,12 @@ public class SplashActivity extends AppCompatActivity {
         FirebaseUser currentUser = auth.getCurrentUser();
 
         if (currentUser != null) {
-            // Utilizator logat -> mergem la HomeActivity
             Intent intent = new Intent(SplashActivity.this, HomeActivity.class);
             startActivity(intent);
         } else {
-            // Utilizator nelogat -> mergem la LoginActivity
             Intent intent = new Intent(SplashActivity.this, LoginActivity.class);
             startActivity(intent);
         }
-
-        finish(); // Inchidem Splash-ul ca să nu poată reveni aici cu back
+        finish();
     }
 }

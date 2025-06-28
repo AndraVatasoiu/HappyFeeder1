@@ -57,7 +57,7 @@ public class AddMealActivity extends AppCompatActivity {
             return;
         }
 
-        addMealCard(false, null); // Adaugă un card nou pentru mese noi
+        addMealCard(false, null);
 
         Button buttonBack = findViewById(R.id.button_back);
         buttonBack.setOnClickListener(v -> finish());
@@ -156,13 +156,16 @@ public class AddMealActivity extends AppCompatActivity {
                             userDocRef.update(updates)
                                     .addOnSuccessListener(unused -> {
                                         existingMealsContainer.removeView(mealCard);
-                                        Toast.makeText(AddMealActivity.this, "Masa a fost ștearsă!", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(AddMealActivity.this, "Masa a fost ștearsă!",
+                                                Toast.LENGTH_SHORT).show();
                                     })
-                                    .addOnFailureListener(e -> Toast.makeText(AddMealActivity.this, "Eroare la ștergere: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                                    .addOnFailureListener(e -> Toast.makeText(AddMealActivity.this,
+                                            "Eroare la ștergere: " + e.getMessage(), Toast.LENGTH_SHORT).show());
                         }
                     }
                 })
-                .addOnFailureListener(e -> Toast.makeText(AddMealActivity.this, "Eroare la căutarea utilizatorului: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> Toast.makeText(AddMealActivity.this,
+                        "Eroare la căutarea utilizatorului: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
     private void saveMeals() {
@@ -171,7 +174,6 @@ public class AddMealActivity extends AppCompatActivity {
             Toast.makeText(this, "Adaugă cel puțin o masă!", Toast.LENGTH_SHORT).show();
             return;
         }
-
         CollectionReference usersRef = fStore.collection("users");
         usersRef.whereEqualTo("username", usernameFromIntent)
                 .get()
@@ -185,8 +187,6 @@ public class AddMealActivity extends AppCompatActivity {
                                 if (existingMeals == null) {
                                     existingMeals = new HashMap<>();
                                 }
-
-                                // Verificăm dacă toate câmpurile sunt completate înainte de salvare
                                 for (int i = 0; i < count; i++) {
                                     View card = mealCardContainer.getChildAt(i);
                                     EditText name = card.findViewById(R.id.edit_meal_name);
@@ -202,8 +202,6 @@ public class AddMealActivity extends AppCompatActivity {
                                         return;
                                     }
                                 }
-
-                                // Dacă toate câmpurile sunt OK, procedăm cu salvarea
                                 for (int i = 0; i < count; i++) {
                                     View card = mealCardContainer.getChildAt(i);
                                     EditText name = card.findViewById(R.id.edit_meal_name);
@@ -223,8 +221,6 @@ public class AddMealActivity extends AppCompatActivity {
 
                                     existingMeals.put(newMealId, mealDetails);
                                 }
-
-                                // Actualizăm documentul cu noile mese
                                 userDocRef.update("meals", existingMeals)
                                         .addOnSuccessListener(unused -> {
                                             Toast.makeText(AddMealActivity.this, "Mesele au fost salvate cu succes!", Toast.LENGTH_LONG).show();
@@ -257,13 +253,10 @@ public class AddMealActivity extends AppCompatActivity {
                                             for (Map.Entry<String, Object> entry : existingMeals.entrySet()) {
                                                 Map<String, Object> mealDetails = (Map<String, Object>) entry.getValue();
                                                 String mealId = entry.getKey();
-
                                                 addMealCard(true, mealDetails);
-
                                                 int lastIndex = existingMealsContainer.getChildCount() - 1;
                                                 View mealCard = existingMealsContainer.getChildAt(lastIndex);
                                                 ImageView buttonRemoveMeal = mealCard.findViewById(R.id.button_remove_meal);
-
                                                 buttonRemoveMeal.setTag(mealId);
                                             }
                                         }

@@ -54,7 +54,42 @@
                     android:textColor="@android:color/white" />
             </TableRow>
 
-            <!-- Rânduri dinamice vor fi adăugate din Java -->
+            <!-- Rânduri hardcodate pentru prezentare -->
+            <TableRow android:background="@android:color/white">
+                <TextView
+                    android:text="2025-06-20"
+                    android:padding="8dp" />
+                <TextView
+                    android:text="9 kg"
+                    android:padding="8dp" />
+                <TextView
+                    android:text="—"
+                    android:padding="8dp" />
+            </TableRow>
+
+            <TableRow android:background="#f0f0f0">
+                <TextView
+                    android:text="2025-06-21"
+                    android:padding="8dp" />
+                <TextView
+                    android:text="9.2 kg"
+                    android:padding="8dp" />
+                <TextView
+                    android:text="+0.2 kg"
+                    android:padding="8dp" />
+            </TableRow>
+
+            <TableRow android:background="@android:color/white">
+                <TextView
+                    android:text="2025-06-22"
+                    android:padding="8dp" />
+                <TextView
+                    android:text="9.1 kg"
+                    android:padding="8dp" />
+                <TextView
+                    android:text="-0.1 kg"
+                    android:padding="8dp" />
+            </TableRow>
 
         </TableLayout>
 
@@ -62,7 +97,14 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="24dp" />
-
+        <TextView
+            android:id="@+id/currentWeightTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Greutate curenta: -- kg"
+            android:textSize="18sp"
+            android:padding="16dp"
+            />
         <!-- Buton Înapoi -->
         <Button
             android:id="@+id/backButton"
@@ -74,5 +116,7 @@
             android:textColor="@android:color/white"
             android:paddingHorizontal="24dp"
             android:paddingVertical="12dp" />
+
     </LinearLayout>
+
 </ScrollView>

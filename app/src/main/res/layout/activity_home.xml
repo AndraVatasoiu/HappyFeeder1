@@ -18,7 +18,6 @@
             android:background="@drawable/bg_top_rounded"
             android:padding="20dp">
 
-            <!-- Poza profil și meniu în stânga sus -->
             <LinearLayout
                 android:id="@+id/profileMenuContainer"
                 android:layout_width="wrap_content"
@@ -38,7 +37,6 @@
                     android:contentDescription="Meniu" />
             </LinearLayout>
 
-            <!-- Buton +Pet sus dreapta (schimbat din TextView în Button) -->
             <Button
                 android:id="@+id/addPetButton"
                 android:layout_width="60dp"
@@ -56,7 +54,6 @@
                 android:focusable="true"
                 android:elevation="8dp" />
 
-            <!-- Logo centru -->
             <ImageView
                 android:id="@+id/appLogo"
                 android:layout_width="72dp"
@@ -66,7 +63,6 @@
                 android:src="@drawable/logo"
                 android:contentDescription="Logo aplicație" />
 
-            <!-- Text Bună -->
             <TextView
                 android:id="@+id/welcomeText"
                 android:layout_width="wrap_content"
@@ -79,7 +75,6 @@
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
-            <!-- Text Nume utilizator -->
             <TextView
                 android:id="@+id/usernameText"
                 android:layout_width="wrap_content"
@@ -154,6 +149,7 @@
             </LinearLayout>
 
             <TextView
+                android:id="@+id/foodLevelText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Nivelul de hrană din dispozitiv este:"
@@ -184,29 +180,34 @@
             android:paddingStart="24dp"
             android:paddingEnd="24dp">
 
-            <!-- Carduri cameră și mesaj -->
+            <!-- Doar card camera -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center"
-                android:layout_marginBottom="16dp"
-                android:weightSum="2">
+                android:layout_marginBottom="16dp">
 
                 <LinearLayout
                     android:id="@+id/cardCamera"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:background="@drawable/bg_rounded_red"
                     android:padding="16dp"
                     android:orientation="vertical"
                     android:elevation="4dp"
                     android:gravity="center_horizontal"
-                    android:layout_marginEnd="8dp"
                     android:clickable="true"
                     android:focusable="true"
                     android:foreground="?attr/selectableItemBackground">
+
+                    <ImageView
+                        android:id="@+id/imageLiveCamera"
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:scaleType="centerCrop"
+                        android:layout_marginBottom="8dp"
+                        android:visibility="gone" />
 
                     <ImageView
                         android:layout_width="40dp"
@@ -220,37 +221,6 @@
                         android:layout_marginTop="8dp"
                         android:text="Vezi ce face animaluțul"
                         android:textColor="@android:color/white"
-                        android:textSize="14sp"
-                        android:gravity="center" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/cardMesaj"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:background="@drawable/bg_rounded_white"
-                    android:padding="16dp"
-                    android:orientation="vertical"
-                    android:elevation="4dp"
-                    android:gravity="center_horizontal"
-                    android:layout_marginStart="8dp"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?attr/selectableItemBackground">
-
-                    <ImageView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:src="@drawable/ic_sound"
-                        app:tint="#ED3A55" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Trimite un mesaj animalutului tau"
-                        android:textColor="#333"
                         android:textSize="14sp"
                         android:gravity="center" />
                 </LinearLayout>
@@ -300,9 +270,7 @@
                 </HorizontalScrollView>
             </LinearLayout>
 
-
             <!-- Greutatea animalului -->
-            <!-- Card Greutate -->
             <LinearLayout
                 android:id="@+id/cardGreutate"
                 android:layout_width="match_parent"
@@ -343,6 +311,5 @@
                 android:backgroundTint="#ED3A55"
                 android:layout_marginTop="24dp" />
         </LinearLayout>
-
     </RelativeLayout>
 </ScrollView>

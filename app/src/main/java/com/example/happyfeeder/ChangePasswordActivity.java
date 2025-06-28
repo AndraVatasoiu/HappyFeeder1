@@ -58,26 +58,20 @@ public class ChangePasswordActivity extends AppCompatActivity {
         String oldPassword = oldPasswordEditText.getText().toString().trim();
         String newPassword = newPasswordEditText.getText().toString().trim();
         String confirmPassword = confirmPasswordEditText.getText().toString().trim();
-
         if (!newPassword.equals(confirmPassword)) {
             Toast.makeText(this, "Parolele nu se potrivesc!", Toast.LENGTH_SHORT).show();
             return;
         }
-
         if (oldPassword.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
             Toast.makeText(this, "Toate câmpurile sunt obligatorii!", Toast.LENGTH_SHORT).show();
             return;
         }
-
         userDocRef.get().addOnSuccessListener(documentSnapshot -> {
             if (documentSnapshot.exists()) {
                 String savedPasswordHash = documentSnapshot.getString("passwordHash");
-
                 String enteredOldHash = hashPassword(oldPassword);
-
                 if (enteredOldHash.equals(savedPasswordHash)) {
                     String newHashedPassword = hashPassword(newPassword);
-
                     userDocRef.update("passwordHash", newHashedPassword)
                             .addOnSuccessListener(aVoid -> Toast.makeText(this, "Parola a fost schimbată!", Toast.LENGTH_SHORT).show())
                             .addOnFailureListener(e -> Toast.makeText(this, "Eroare la salvarea parolei.", Toast.LENGTH_SHORT).show());

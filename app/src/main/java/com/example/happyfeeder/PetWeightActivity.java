@@ -3,33 +3,38 @@ package com.example.happyfeeder;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.TableLayout;
-import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 public class PetWeightActivity extends AppCompatActivity {
 
     private TableLayout weightTable;
     private FirebaseFirestore db;
+    private DatabaseReference realtimeDbRef;
     private String username;
     private String petId; // ID-ul animalului
     private String currentDate;
     private float currentWeight;
+
+    private TextView currentWeightTextView; // pentru afisare greutate curenta
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,11 +42,13 @@ public class PetWeightActivity extends AppCompatActivity {
         setContentView(R.layout.activity_pet_weight);
 
         weightTable = findViewById(R.id.weightTable);
+        currentWeightTextView = findViewById(R.id.currentWeightTextView);
         Button backButton = findViewById(R.id.backButton);
 
         currentDate = LocalDate.now().toString(); // ex: 2025-05-24
 
         db = FirebaseFirestore.getInstance();
+        realtimeDbRef = FirebaseDatabase.getInstance().getReference();
 
         SharedPreferences prefs = getSharedPreferences("userSession", MODE_PRIVATE);
         username = prefs.getString("loggedUsername", null);
@@ -52,7 +59,7 @@ public class PetWeightActivity extends AppCompatActivity {
             return;
         }
 
-        // Pasul 1: Caută animalul asociat
+        // Pas 1: Ia petId si greutatea initiala din Firestore
         db.collection("pets")
                 .whereEqualTo("owner_username", username)
                 .get()
@@ -60,10 +67,18 @@ public class PetWeightActivity extends AppCompatActivity {
                     if (!snapshot.isEmpty()) {
                         DocumentSnapshot petDoc = snapshot.getDocuments().get(0);
                         petId = petDoc.getId();
-                        currentWeight = Float.parseFloat(petDoc.getString("weight"));
-
-                        // Pasul 2: încarcă istoricul greutăților
-                        loadWeightHistory();
+                        String weightStr = petDoc.getString("weight");
+                        if (weightStr != null) {
+                            try {
+                                currentWeight = Float.parseFloat(weightStr);
+                            } catch (NumberFormatException e) {
+                                currentWeight = 0f;
+                            }
+                        } else {
+                            currentWeight = 0f;
+                        }
+                        // Pas 2: Verifica greutatea din Realtime DB si actualizeaza currentWeight daca e cazul
+                        checkRealtimeWeightAndLoad();
                     } else {
                         Toast.makeText(this, "Nu s-a găsit animalul!", Toast.LENGTH_SHORT).show();
                     }
@@ -71,94 +86,75 @@ public class PetWeightActivity extends AppCompatActivity {
                 .addOnFailureListener(e ->
                         Toast.makeText(this, "Eroare la accesarea datelor animalului.", Toast.LENGTH_SHORT).show());
 
-        // Buton Înapoi
         backButton.setOnClickListener(v -> {
             startActivity(new Intent(PetWeightActivity.this, HomeActivity.class));
             finish();
         });
     }
 
-    private void loadWeightHistory() {
-        CollectionReference weightsRef = db.collection("pets")
-                .document(petId)
-                .collection("weights");
+    private void checkRealtimeWeightAndLoad() {
+        // Referinta exacta in Realtime Database
+        DatabaseReference greutateRealtimeRef = realtimeDbRef.child("users")
+                .child("Q0rrPOn4ZJfUpyqWI0xuKDliPP02")
+                .child("nextMeal")
+                .child("greutateAnimal");
 
-        weightsRef.get().addOnSuccessListener(querySnapshot -> {
-            List<DocumentSnapshot> docs = querySnapshot.getDocuments();
-            List<WeightEntry> entries = new ArrayList<>();
+        greutateRealtimeRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    Double greutateRealtime = snapshot.getValue(Double.class);
+                    if (greutateRealtime != null) {
+                        Log.d("PetWeightActivity", "Greutate din Realtime DB: " + greutateRealtime);
+                        Toast.makeText(PetWeightActivity.this, "Greutate RTDB: " + greutateRealtime, Toast.LENGTH_SHORT).show();
 
-            for (DocumentSnapshot doc : docs) {
-                String date = doc.getString("date");
-                String weightStr = doc.getString("weight");
-                if (date != null && weightStr != null) {
-                    try {
-                        float w = Float.parseFloat(weightStr);
-                        entries.add(new WeightEntry(date, w));
-                    } catch (NumberFormatException ignored) {
+                        if (greutateRealtime >= 500) {
+                            currentWeight = greutateRealtime.floatValue();
+                            Log.d("PetWeightActivity", "Greutate actualizata cu RTDB: " + currentWeight);
+                            Toast.makeText(PetWeightActivity.this, "Greutate actualizata la RTDB: " + currentWeight, Toast.LENGTH_SHORT).show();
+                        } else {
+                            Log.d("PetWeightActivity", "Greutatea RTDB mai mica de 500, se pastreaza Firestore: " + currentWeight);
+                            Toast.makeText(PetWeightActivity.this, "Greutate ramane Firestore: " + currentWeight, Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Log.d("PetWeightActivity", "Greutatea RTDB este null");
                     }
+                } else {
+                    Log.d("PetWeightActivity", "Greutatea RTDB nu exista");
                 }
+                // Afiseaza greutatea curenta pe ecran
+                currentWeightTextView.setText("Greutate curenta: " + currentWeight + " kg");
+
+                // NU mai incarca istoricul in tabel (am comentat apelul)
+                // loadWeightHistory();
             }
 
-            // Sortează după dată (descrescător)
-            Collections.sort(entries, (a, b) -> b.date.compareTo(a.date));
-
-            // Adaugă rândurile existente
-            for (int i = 0; i < entries.size(); i++) {
-                WeightEntry current = entries.get(i);
-                String diff = "—";
-
-                if (i + 1 < entries.size()) {
-                    float delta = current.weight - entries.get(i + 1).weight;
-                    diff = String.format("%.2f kg", delta);
-                }
-
-                addRowToTable(current.date, current.weight + " kg", diff);
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(PetWeightActivity.this, "Eroare la citirea din Realtime DB", Toast.LENGTH_SHORT).show();
+                // NU mai incarca istoricul in tabel
+                // loadWeightHistory();
             }
+        });
+    }
 
-            // Verifică dacă data de azi e deja adăugată
-            boolean todayExists = entries.stream().anyMatch(e -> e.date.equals(currentDate));
-            if (!todayExists) {
-                saveTodayWeight();
-                addRowToTable(currentDate, currentWeight + " kg", "—");
-            }
+    // Eliminam sau comentam restul metodelor legate de incarcare tabel (optional, pentru claritate)
 
-        }).addOnFailureListener(e ->
-                Toast.makeText(this, "Eroare la încărcarea istoricului.", Toast.LENGTH_SHORT).show());
+    /*
+    private void loadWeightHistory() {
+        // Nu mai folosim
     }
 
     private void saveTodayWeight() {
-        DocumentReference todayRef = db.collection("pets")
-                .document(petId)
-                .collection("weights")
-                .document(currentDate);
-
-        todayRef.set(new WeightEntry(currentDate, currentWeight));
+        // Nu mai folosim
     }
 
     private void addRowToTable(String date, String weight, String diff) {
-        TableRow row = new TableRow(this);
-
-        TextView dateView = new TextView(this);
-        TextView weightView = new TextView(this);
-        TextView diffView = new TextView(this);
-
-        int padding = 8;
-        dateView.setPadding(padding, padding, padding, padding);
-        weightView.setPadding(padding, padding, padding, padding);
-        diffView.setPadding(padding, padding, padding, padding);
-
-        dateView.setText(date);
-        weightView.setText(weight);
-        diffView.setText(diff);
-
-        row.addView(dateView);
-        row.addView(weightView);
-        row.addView(diffView);
-
-        weightTable.addView(row);
+        // Nu mai folosim
     }
+    */
 
-    // Clasă internă pentru modelul greutății
+    // Clasă internă pentru modelul greutății (dacă vrei o poți păstra)
     public static class WeightEntry {
         public String date;
         public float weight;

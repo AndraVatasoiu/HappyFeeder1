@@ -108,25 +108,26 @@ public class AddPetActivity extends AppCompatActivity {
                         boolean isEditMode = petsField != null && !petsField.toString().isEmpty();
 
                         // Validare: dacă suntem în adăugare, toate câmpurile trebuie completate
+
                         if (!isEditMode) {
                             if (petName.isEmpty() || petWeight.isEmpty()) {
-                                Toast.makeText(this, "Completează toate câmpurile pentru a adăuga un animal!", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(this, "Completează toate câmpurile pentru a adăuga un animal!",
+                                        Toast.LENGTH_SHORT).show();
                                 return;
                             }
                         }
 
                         // Dacă suntem în editare și toate câmpurile sunt goale, nu continuăm
+
                         if (isEditMode && petName.isEmpty() && petWeight.isEmpty() && selectedImageUri == null) {
                             Toast.makeText(this, "Introduceți cel puțin o modificare pentru a edita!", Toast.LENGTH_SHORT).show();
                             return;
                         }
 
                         // Salvăm sau actualizăm
-                        if (selectedImageUri != null) {
-                            uploadImageAndSavePet(petName, petBreed, petWeight);
-                        } else {
+
                             savePetData(petName, petBreed, petWeight, ""); // fără poză
-                        }
+
 
                     } else {
                         Toast.makeText(this, "Utilizatorul nu a fost găsit!", Toast.LENGTH_SHORT).show();
@@ -138,21 +139,6 @@ public class AddPetActivity extends AppCompatActivity {
     }
 
 
-    private void uploadImageAndSavePet(String name, String breed, String weight) {
-        StorageReference storageRef = storage.getReference();
-        String filename = "pets/" + UUID.randomUUID().toString() + ".jpg";
-        StorageReference petImageRef = storageRef.child(filename);
-
-        petImageRef.putFile(selectedImageUri)
-                .addOnSuccessListener(taskSnapshot -> petImageRef.getDownloadUrl()
-                        .addOnSuccessListener(uri -> {
-                            String imageUrl = uri.toString();
-                            savePetData(name, breed, weight, imageUrl);
-                        }))
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Eroare la încărcarea imaginii!", Toast.LENGTH_SHORT).show();
-                });
-    }
 
     private void savePetData(String name, String breed, String weight, String imageUrl) {
         String username = getIntent().getStringExtra("username");

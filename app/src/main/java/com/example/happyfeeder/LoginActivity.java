@@ -58,7 +58,6 @@ public class LoginActivity extends AppCompatActivity {
             return true;
         }
     }
-
     public Boolean validatePassword(){
         String val = loginPassword.getText().toString();
         if(val.isEmpty()) {
@@ -74,27 +73,21 @@ public class LoginActivity extends AppCompatActivity {
         String userUsername = loginUsername.getText().toString().trim();
         String userPassword = loginPassword.getText().toString().trim();
 
-        // Căutăm utilizatorul în colecția 'users' folosind username-ul
         db.collection("users")
-                .whereEqualTo("username", userUsername)  // Căutăm utilizatorul după câmpul 'username'
+                .whereEqualTo("username", userUsername)
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         if (!task.getResult().isEmpty()) {
-                            // Dacă există documente care corespund căutării
-                            DocumentSnapshot document = task.getResult().getDocuments().get(0);  // Obținem primul document găsit
+                            DocumentSnapshot document = task.getResult().getDocuments().get(0);
 
-                            // Accesăm câmpul 'passwordHash' din Firestore
                             String passwordHashFromDB = document.getString("passwordHash");
-                            String hashedInputPassword = hashPassword(userPassword);  // Hash-uim parola introdusă de utilizator
+                            String hashedInputPassword = hashPassword(userPassword);
 
-                            // Comparam cele două hash-uri
                             if (passwordHashFromDB != null && passwordHashFromDB.equals(hashedInputPassword)) {
-                                // Salvăm sesiunea utilizatorului
                                 SharedPreferences prefs = getSharedPreferences("userSession", MODE_PRIVATE);
                                 prefs.edit().putString("loggedUsername", userUsername).apply();
 
-                                // Trecem la pagina Home
                                 Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
                                 startActivity(intent);
                                 finish();

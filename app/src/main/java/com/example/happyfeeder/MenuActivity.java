@@ -17,12 +17,10 @@ public class MenuActivity extends AppCompatActivity {
         Button btnChangePassword = findViewById(R.id.btnChangePassword);
 
         btnChangeEmail.setOnClickListener(v -> {
-            // Start change email activity
             startActivity(new Intent(this, ChangeEmailActivity.class));
         });
 
         btnChangePassword.setOnClickListener(v -> {
-            // Start change password activity
             startActivity(new Intent(this, ChangePasswordActivity.class));
         });
     }

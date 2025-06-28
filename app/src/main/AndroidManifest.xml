@@ -34,7 +34,6 @@
         <activity android:name=".ChangeEmailActivity" android:exported="true"/>
         <activity android:name=".ChangePasswordActivity" android:exported="true"/>
         <activity android:name=".PetWeightActivity" android:exported="true"/>
-        <activity android:name=".RecordAudioActivity" android:exported="true"/>
         <activity android:name=".MealChoiceActivity" android:exported="true"/>
         <activity android:name=".AutoMealActivity" android:exported="true"/>
 

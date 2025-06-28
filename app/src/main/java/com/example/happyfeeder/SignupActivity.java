@@ -45,17 +45,14 @@ public class SignupActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
-
         signupUsername = findViewById(R.id.signup_username);
         signupEmail = findViewById(R.id.signup_email);
         signupPassword = findViewById(R.id.signup_password);
         signupConfirmPass = findViewById(R.id.signup_confirmpass);
         signupButton = findViewById(R.id.signup_button);
         loginRedirectText = findViewById(R.id.loginRedirectText);
-
         auth = FirebaseAuth.getInstance();
-        fStore = FirebaseFirestore.getInstance();  // Inițializezi Firestore
-
+        fStore = FirebaseFirestore.getInstance();
         signupButton.setOnClickListener(view -> {
             String username = signupUsername.getText().toString().trim();
             String email = signupEmail.getText().toString().trim();
@@ -66,7 +63,6 @@ public class SignupActivity extends AppCompatActivity {
                 Toast.makeText(this, "Email invalid!", Toast.LENGTH_SHORT).show();
                 return;
             }
-
             if (!password.equals(confirmPassword)) {
                 Toast.makeText(this, "Parolele nu se potrivesc!", Toast.LENGTH_SHORT).show();
                 return;
@@ -78,12 +74,10 @@ public class SignupActivity extends AppCompatActivity {
                     if (firebaseUser != null) {
                         String userID = firebaseUser.getUid();
                         DocumentReference documentReference = fStore.collection("users").document(userID);
-
                         Map<String, Object> user = new HashMap<>();
                         user.put("username", username);
                         user.put("email", email);
                         user.put("passwordHash", hashPassword(password));
-
                         documentReference.set(user)
                                 .addOnSuccessListener(unused -> {
                                     Toast.makeText(SignupActivity.this, "Utilizator salvat în Firestore!", Toast.LENGTH_SHORT).show();
@@ -92,12 +86,10 @@ public class SignupActivity extends AppCompatActivity {
                                     Toast.makeText(SignupActivity.this, "Eroare la salvare în Firestore: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                                     Log.e("SignupActivity", "Firestore error: ", e);
                                 });
-
                         SharedPreferences sharedPreferences = getSharedPreferences("user_details", MODE_PRIVATE);
                         SharedPreferences.Editor editor = sharedPreferences.edit();
                         editor.putString("username", username);
                         editor.apply();
-
                         Intent intent = new Intent(SignupActivity.this, MainActivity.class);
                         intent.putExtra("username", username);
                         startActivity(intent);
